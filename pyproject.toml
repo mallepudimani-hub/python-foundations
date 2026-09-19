@@ -7,7 +7,9 @@ authors = [
     { name = "Mani Mallepudi", email = "mallepudimani@gmail.com" }
 ]
 requires-python = ">=3.13,<3.14"
-dependencies = []
+dependencies = [
+    "pydantic>=2.13.5",
+]
 
 [project.scripts]
 python-foundations = "python_foundations:main"

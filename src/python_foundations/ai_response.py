@@ -1,6 +1,6 @@
 import json
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 
 class UsageModel(BaseModel):
@@ -14,10 +14,17 @@ class AIResponseModel(BaseModel):
     usage: UsageModel
 
 
+class AIResponseParseError(Exception):
+    """Raised when an external AI response cannot be parsed or validated."""
+
+
 def get_output_tokens(response: AIResponseModel) -> int:
     return response.usage.output_tokens
 
 
 def parse_ai_response(json_text: str) -> AIResponseModel:
-    data = json.loads(json_text)
-    return AIResponseModel(**data)
+    try:
+        data = json.loads(json_text)
+        return AIResponseModel(**data)
+    except (json.JSONDecodeError, ValidationError) as error:
+        raise AIResponseParseError("Invalid AI response") from error

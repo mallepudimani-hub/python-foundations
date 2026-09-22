@@ -1,4 +1,4 @@
-from python_foundations.main import add
+from python_foundations.math_utils import add
 
 
 def test_add() -> None:

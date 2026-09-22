@@ -1,5 +1,4 @@
-def add(first: int, second: int) -> int:
-    return first + second
+from python_foundations.math_utils import add
 
 
 def main() -> None:

@@ -1,11 +1,18 @@
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from python_foundations.user_models import UserCreate, UserResponse
-from python_foundations.user_service import UserValidationError
-from python_foundations.user_service import create_user as create_user_service
+from python_foundations.user_service import (
+    UserService,
+    UserValidationError,
+    get_user_service,
+)
 
 app = FastAPI()
+
+
+def get_app_name() -> str:
+    return "AI Engineering API"
 
 
 @app.get("/hello")
@@ -19,8 +26,11 @@ def get_user(user_id: int) -> dict[str, int]:
 
 
 @app.post("/users", response_model=UserResponse)
-def create_user(user: UserCreate) -> UserResponse:
-    return create_user_service(user)
+def create_user(
+    user: UserCreate,
+    user_service: UserService = Depends(get_user_service),
+) -> UserResponse:
+    return user_service.create_user(user)
 
 
 @app.exception_handler(UserValidationError)
@@ -32,3 +42,8 @@ def handle_user_validation_error(
         status_code=400,
         content={"detail": str(error)},
     )
+
+
+@app.get("/app-info")
+def app_info(app_name: str = Depends(get_app_name)) -> dict[str, str]:
+    return {"app_name": app_name}

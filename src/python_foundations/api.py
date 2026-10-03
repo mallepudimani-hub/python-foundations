@@ -1,6 +1,9 @@
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
+from python_foundations.database import get_db
 from python_foundations.user_models import UserCreate, UserResponse
 from python_foundations.user_service import (
     UserService,
@@ -47,3 +50,11 @@ def handle_user_validation_error(
 @app.get("/app-info")
 def app_info(app_name: str = Depends(get_app_name)) -> dict[str, str]:
     return {"app_name": app_name}
+
+
+@app.get("/db-session")
+def db_session(db: Session = Depends(get_db)) -> dict[str, str]:
+    result = db.execute(text("SELECT current_database()"))
+    database_name: str = result.scalar_one()
+
+    return {"database": database_name}

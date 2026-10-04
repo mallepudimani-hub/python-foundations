@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from python_foundations.db_models import Base
+
 load_dotenv()
 
 DATABASE_URL = os.environ["DATABASE_URL"]
@@ -21,3 +23,6 @@ def get_db() -> Generator[Session]:
         yield db
     finally:
         db.close()
+
+
+Base.metadata.create_all(bind=engine)

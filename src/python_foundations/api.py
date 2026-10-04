@@ -28,6 +28,13 @@ def get_user(user_id: int) -> dict[str, int]:
     return {"user_id": user_id}
 
 
+@app.get("/users", response_model=list[UserResponse])
+def get_users(
+    user_service: UserService = Depends(get_user_service),
+) -> list[UserResponse]:
+    return user_service.get_users()
+
+
 @app.post("/users", response_model=UserResponse)
 def create_user(
     user: UserCreate,

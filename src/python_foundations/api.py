@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -23,9 +23,17 @@ def hello(name: str = "Mani") -> dict[str, str]:
     return {"message": f"Hello, {name}"}
 
 
-@app.get("/users/{user_id}")
-def get_user(user_id: int) -> dict[str, int]:
-    return {"user_id": user_id}
+@app.get("/users/{user_id}", response_model=UserResponse)
+def get_user(
+    user_id: int,
+    user_service: UserService = Depends(get_user_service),
+) -> UserResponse:
+    user = user_service.get_user_by_id(user_id)
+
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user
 
 
 @app.get("/users", response_model=list[UserResponse])

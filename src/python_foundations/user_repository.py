@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from python_foundations.db_models import User
@@ -15,3 +16,8 @@ class UserRepository:
 
     def get_all(self) -> list[User]:
         return self.db.query(User).all()
+
+    def get_by_id(self, user_id: int) -> User | None:
+        statement = select(User).where(User.id == user_id)
+        result = self.db.execute(statement)
+        return result.scalar_one_or_none()

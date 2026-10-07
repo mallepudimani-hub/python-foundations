@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from python_foundations.database import get_db
@@ -39,6 +39,18 @@ class UserService:
             UserResponse(name=user.name, email=user.email, age=user.age)
             for user in users
         ]
+
+    def get_user_by_id(self, user_id: int) -> UserResponse:
+        user = self.repository.get_by_id(user_id)
+
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        return UserResponse(
+            name=user.name,
+            email=user.email,
+            age=user.age,
+        )
 
 
 def get_user_service(db: Session = Depends(get_db)) -> UserService:

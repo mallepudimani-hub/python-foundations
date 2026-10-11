@@ -13,6 +13,7 @@ class UserValidationError(Exception):
 
 class UserService:
     def __init__(self, db: Session) -> None:
+        self.db = db
         self.repository = UserRepository(db)
 
     def create_user(self, user: UserCreate) -> UserResponse:
@@ -25,13 +26,17 @@ class UserService:
             age=user.age,
         )
 
-        db_user = self.repository.create(db_user)
-
-        return UserResponse(
-            name=db_user.name,
-            email=db_user.email,
-            age=db_user.age,
-        )
+        try:
+            db_user = self.repository.create(db_user)
+            self.db.commit()
+            return UserResponse(
+                name=db_user.name,
+                email=db_user.email,
+                age=db_user.age,
+            )
+        except Exception:
+            self.db.rollback()
+            raise
 
     def get_users(self) -> list[UserResponse]:
         users = self.repository.get_all()
@@ -51,6 +56,17 @@ class UserService:
             email=user.email,
             age=user.age,
         )
+
+    def update_user_age(self, user_id: int, age: int) -> UserResponse | None:
+        updated = self.repository.update_age(user_id, age)
+
+        if not updated:
+            return None
+
+        return self.get_user_by_id(user_id)
+
+    def delete_user(self, user_id: int) -> bool:
+        return self.repository.delete_user(user_id)
 
 
 def get_user_service(db: Session = Depends(get_db)) -> UserService:

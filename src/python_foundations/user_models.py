@@ -11,3 +11,7 @@ class UserResponse(BaseModel):
     name: str
     email: str
     age: int
+
+
+class UserAgeUpdate(BaseModel):
+    age: int

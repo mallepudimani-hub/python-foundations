@@ -4,7 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from python_foundations.database import get_db
-from python_foundations.user_models import UserCreate, UserResponse
+from python_foundations.user_models import UserAgeUpdate, UserCreate, UserResponse
 from python_foundations.user_service import (
     UserService,
     UserValidationError,
@@ -73,3 +73,30 @@ def db_session(db: Session = Depends(get_db)) -> dict[str, str]:
     database_name: str = result.scalar_one()
 
     return {"database": database_name}
+
+
+@app.put("/users/{user_id}/age", response_model=UserResponse)
+def update_user_age(
+    user_id: int,
+    update: UserAgeUpdate,
+    user_service: UserService = Depends(get_user_service),
+) -> UserResponse:
+    user = user_service.update_user_age(user_id, update.age)
+
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user
+
+
+@app.delete("/users/{user_id}")
+def delete_user(
+    user_id: int,
+    user_service: UserService = Depends(get_user_service),
+) -> dict[str, str]:
+    deleted = user_service.delete_user(user_id)
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"message": "User deleted successfully"}

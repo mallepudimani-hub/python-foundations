@@ -24,6 +24,9 @@ class FakeUserService:
 
         return None
 
+    def delete_user(self, user_id: int) -> bool:
+        return user_id == 1
+
 
 @pytest.fixture
 def fake_user_service() -> None:
@@ -74,6 +77,28 @@ def test_get_user_returns_404_when_user_not_found(
     fake_user_service: None,
 ) -> None:
     response = client.get("/users/999")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "User not found",
+    }
+
+
+def test_delete_user_returns_success(
+    fake_user_service: None,
+) -> None:
+    response = client.delete("/users/1")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "message": "User deleted successfully",
+    }
+
+
+def test_delete_user_returns_404_when_user_not_found(
+    fake_user_service: None,
+) -> None:
+    response = client.delete("/users/999")
 
     assert response.status_code == 404
     assert response.json() == {

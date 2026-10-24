@@ -1,3 +1,6 @@
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+
 from python_foundations.database import SessionLocal
 from python_foundations.db_models import Address, User
 
@@ -65,3 +68,39 @@ def test_delete_user_deletes_addresses() -> None:
     finally:
         db.rollback()
         db.close()
+
+    def test_get_users_with_addresses() -> None:
+        db = SessionLocal()
+
+        try:
+            user = User(
+                name="Loading Test",
+                email="loading@example.com",
+                age=30,
+            )
+
+            address = Address(
+                street="789 Loading Street",
+                city="Hyderabad",
+            )
+
+            user.addresses.append(address)
+
+            db.add(user)
+            db.commit()
+
+            statement = (
+                select(User)
+                .options(selectinload(User.addresses))
+                .where(User.id == user.id)
+            )
+
+            result = db.execute(statement)
+            loaded_user = result.scalar_one()
+
+            assert len(loaded_user.addresses) == 1
+            assert loaded_user.addresses[0].city == "Hyderabad"
+
+        finally:
+            db.rollback()
+            db.close()

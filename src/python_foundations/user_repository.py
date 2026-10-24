@@ -1,5 +1,5 @@
 from sqlalchemy import delete, select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from python_foundations.db_models import User
 
@@ -10,12 +10,13 @@ class UserRepository:
 
     def create(self, user: User) -> User:
         self.db.add(user)
-        # self.db.commit()
-        # self.db.refresh(user)
         return user
 
     def get_all(self) -> list[User]:
-        return self.db.query(User).all()
+        statement = select(User).options(selectinload(User.addresses))
+        result = self.db.execute(statement)
+        return list(result.scalars().all())
+        # return self.db.query(User).all()
 
     def get_by_id(self, user_id: int) -> User | None:
         statement = select(User).where(User.id == user_id)
